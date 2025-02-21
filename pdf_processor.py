@@ -5,12 +5,10 @@ import logging
 
 # 🔹 Ensure pdfminer.six is installed before importing
 try:
-    import pdfminer
+    from pdfminer.high_level import extract_text
 except ImportError:
     os.system("pip install pdfminer.six")
-    import pdfminer
-
-from pdfminer.high_level import extract_text
+    from pdfminer.high_level import extract_text
 
 def extract_text_from_pdf(uploaded_file):
     """
@@ -50,4 +48,3 @@ def extract_text_from_pdf(uploaded_file):
         raise Exception("No text could be extracted from the PDF. The file might be scanned, protected, or corrupted.")
 
     return text.strip()
-
