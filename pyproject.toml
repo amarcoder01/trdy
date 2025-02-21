@@ -4,19 +4,21 @@ version = "0.1.0"
 description = "A Streamlit app"
 authors = ["Your Name <your.email@example.com>"]
 readme = "README.md"
+package-mode = false  # 🔹 Add this line
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4"
-streamlit = "^1.27.0"
-pandas = "^2.1.0"
-numpy = "^1.26.0"
+streamlit = "^1.42.2"
+pandas = "^2.2.3"
+numpy = "^1.26.4"
 tld = ">=0.13,<4"
 trafilatura = "^2.0.0"
 courlan = ">=1.3.2"
-pymupdf = ">=1.25.3,<2"
-beautifulsoup4 = "^4.12.0"
-requests = "^2.31.0"
+pymupdf = ">=1.25.3"
+beautifulsoup4 = "^4.13.3"
+requests = "^2.32.3"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
