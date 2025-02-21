@@ -1,7 +1,14 @@
 import fitz  # PyMuPDF is imported as fitz
-from pdfminer.high_level import extract_text as pdfminer_extract
 from io import BytesIO
 import logging
+
+# 🔹 Fix: Ensure pdfminer.six is installed
+try:
+    from pdfminer.high_level import extract_text
+except ImportError:
+    import os
+    os.system("pip install pdfminer.six")
+    from pdfminer.high_level import extract_text
 
 def extract_text_from_pdf(uploaded_file):
     """
@@ -31,7 +38,7 @@ def extract_text_from_pdf(uploaded_file):
             logging.info("Attempting to extract text using pdfminer.six")
             # Reset file pointer
             pdf_stream = BytesIO(pdf_bytes)
-            text = pdfminer_extract(pdf_stream)
+            text = extract_text(pdf_stream)
             logging.info(f"pdfminer.six extracted {len(text)} characters")
         except Exception as inner_e:
             logging.error(f"pdfminer.six extraction failed: {str(inner_e)}")
