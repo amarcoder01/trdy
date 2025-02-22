@@ -3,12 +3,16 @@ import anthropic
 import json
 import logging
 import time
+import streamlit as st
 from anthropic import Anthropic
 from requests.exceptions import ConnectionError, Timeout
 
+# Fetch API Key from environment variables or Streamlit secrets
+api_key = os.environ.get("ANTHROPIC_API_KEY") or st.secrets["ANTHROPIC_API_KEY"]
+
 # Initialize the Anthropic client
 try:
-    client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+    client = Anthropic(api_key=api_key)
 except Exception as e:
     logging.error(f"Failed to initialize Anthropic client: {str(e)}")
     client = None
@@ -29,14 +33,10 @@ def make_api_request(func, *args, **kwargs):
     for attempt in range(MAX_RETRIES):
         try:
             return func(*args, **kwargs)
-        except ConnectionError as e:
+        except (ConnectionError, Timeout) as e:
             if attempt == MAX_RETRIES - 1:
                 logging.error(f"Connection failed after {MAX_RETRIES} attempts: {str(e)}")
                 raise RuntimeError("Unable to connect to the AI service. Please check your internet connection and try again.")
-            time.sleep(RETRY_DELAY * (attempt + 1))
-        except Timeout:
-            if attempt == MAX_RETRIES - 1:
-                raise RuntimeError("Request timed out. Please try again.")
             time.sleep(RETRY_DELAY * (attempt + 1))
         except Exception as e:
             raise e
@@ -62,59 +62,22 @@ def summarize_document(text):
                     max_tokens=1000,
                     timeout=REQUEST_TIMEOUT,
                     messages=[
-                        {
-                            "role": "system",
-                            "content": "You are a legal document summarizer. Provide a concise summary of the text while maintaining key legal points. Format the response as a clear, readable summary."
-                        },
+                        {"role": "system", "content": "You are a legal document summarizer. Provide a concise summary of the text while maintaining key legal points."},
                         {"role": "user", "content": chunk}
                     ]
                 )
 
-                if not message or not message.content:
+                if message and message.content:
+                    summaries.append(message.content[0].text)
+                else:
                     logging.error("Received empty response from API")
-                    continue
-
-                summary = message.content[0].text
-                if summary:
-                    summaries.append(summary)
-            except anthropic.APIError as api_err:
-                logging.error(f"API error during summarization: {str(api_err)}")
-                return "Service temporarily unavailable. Please try again in a few moments."
-            except anthropic.RateLimitError:
-                logging.error("Rate limit exceeded")
-                return "Service is busy. Please wait a moment and try again."
-            except ConnectionError as conn_err:
-                logging.error(f"Connection error: {str(conn_err)}")
-                return "Network connection issue. Please check your internet connection and try again."
             except Exception as e:
                 logging.error(f"Error processing chunk: {str(e)}")
-                continue
 
         if not summaries:
-            return "Could not generate summary from the provided text."
+            return "No summary generated."
 
-        # Generate final condensed summary
         final_summary = " ".join(summaries)
-        if len(summaries) > 1:
-            try:
-                message = make_api_request(
-                    client.messages.create,
-                    model="claude-3-5-sonnet-20241022",
-                    max_tokens=1000,
-                    timeout=REQUEST_TIMEOUT,
-                    messages=[
-                        {
-                            "role": "system",
-                            "content": "Combine and condense these summaries into a final coherent summary."
-                        },
-                        {"role": "user", "content": final_summary}
-                    ]
-                )
-                final_summary = message.content[0].text
-            except Exception as e:
-                logging.error(f"Error in final summary generation: {str(e)}")
-                # Return the concatenated summaries if final summarization fails
-                return final_summary
 
         return final_summary
 
@@ -145,28 +108,24 @@ def identify_risks(text):
                     max_tokens=1000,
                     timeout=REQUEST_TIMEOUT,
                     messages=[
-                        {
-                            "role": "system",
-                            "content": "You are a legal risk analyst. Identify potential legal risks and concerns in the text. List each risk as a separate, clear statement."
-                        },
+                        {"role": "system", "content": "You are a legal risk analyst. Identify potential legal risks and concerns in the text."},
                         {"role": "user", "content": chunk}
                     ]
                 )
 
                 risk_text = message.content[0].text
-                # Split the response into individual risk statements
                 risks = [risk.strip() for risk in risk_text.split('\n') if risk.strip()]
                 if risks:
                     all_risks.extend(risks)
             except anthropic.APIError as api_err:
                 logging.error(f"API error during risk identification: {str(api_err)}")
-                return ["Service temporarily unavailable. Please try again in a few moments."]
+                return ["Service temporarily unavailable. Please try again later."]
             except anthropic.RateLimitError:
                 logging.error("Rate limit exceeded")
                 return ["Service is busy. Please wait a moment and try again."]
             except ConnectionError as conn_err:
                 logging.error(f"Connection error: {str(conn_err)}")
-                return ["Network connection issue. Please check your internet connection and try again."]
+                return ["Network connection issue. Please check your internet connection."]
             except Exception as e:
                 logging.error(f"Error processing chunk for risks: {str(e)}")
                 continue
@@ -174,10 +133,8 @@ def identify_risks(text):
         if not all_risks:
             return []
 
-        # Deduplicate risks
         unique_risks = list(set(all_risks))
 
-        # Prioritize risks if there are too many
         if len(unique_risks) > 10:
             try:
                 message = make_api_request(
@@ -186,10 +143,7 @@ def identify_risks(text):
                     max_tokens=1000,
                     timeout=REQUEST_TIMEOUT,
                     messages=[
-                        {
-                            "role": "system",
-                            "content": "Analyze these risks and return the 10 most critical ones, removing duplicates and similar items."
-                        },
+                        {"role": "system", "content": "Analyze these risks and return the 10 most critical ones."},
                         {"role": "user", "content": "\n".join(unique_risks)}
                     ]
                 )
@@ -197,7 +151,6 @@ def identify_risks(text):
                 return prioritized_risks[:10]
             except Exception as e:
                 logging.error(f"Error in risk prioritization: {str(e)}")
-                # Return all unique risks if prioritization fails
                 return unique_risks[:10]
 
         return unique_risks
