@@ -5,6 +5,8 @@ from anthropic import Anthropic
 
 # Fetch API Key from Streamlit secrets
 api_key = st.secrets["general"].get("ANTHROPIC_API_KEY", None)
+st.write("DEBUG: API Key:", api_key)  # Remove this after testing
+
 
 if not api_key:
     st.error("❌ AI service is not properly configured. Please check your API key settings in Streamlit Cloud.")
