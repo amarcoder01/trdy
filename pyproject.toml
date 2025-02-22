@@ -1,43 +1,23 @@
 [tool.poetry]
 name = "trdy"
 version = "0.1.0"
-description = "Your project description"
+description = "Your Streamlit App"
 authors = ["Your Name <your.email@example.com>"]
 license = "MIT"
-readme = "README.md"
-packages = [{include = "trdy"}]  # Ensure this matches your project folder
 
 [tool.poetry.dependencies]
-python = "^3.8"
-streamlit = "^1.42.2"
-pandas = "^2.2.3"
-numpy = "^1.26.4"
-scipy = "^1.12.0"
-matplotlib = "^3.8.2"
-seaborn = "^0.13.2"
-requests = "^2.32.3"
-beautifulsoup4 = "^4.13.3"
-pymupdf = "^1.25.3"
-pdfminer-six = "^20221105"
-altair = "^5.5.0"
-watchdog = "^6.0.0"
-rich = "^13.9.4"
-lxml = "^5.3.1"
-pydeck = "^0.9.1"
-dateparser = "^1.2.1"
-gitpython = "^3.1.44"
-jinja2 = "^3.1.5"
-markdown-it-py = "^3.0.0"
-regex = "^2024.11.6"
-tzlocal = "^5.3"
-protobuf = "^5.29.3"
+python = ">=3.9,<3.11"  # Ensure Python 3.9+ is used
+streamlit = "^1.30.0"  # Latest Streamlit version
+tzlocal = "^5.3"  # Works with Python 3.9+
+pandas = "^2.1.0"  # Useful for data manipulation
+numpy = "^1.26.0"  # Ensure compatibility
+matplotlib = "^3.8.0"  # For visualizations
+scipy = "^1.11.0"  # If needed for calculations
+requests = "^2.31.0"  # If making API calls
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.scripts]
-start = "trdy.main:run"
 
 
 
