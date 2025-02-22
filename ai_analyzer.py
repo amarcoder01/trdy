@@ -4,7 +4,15 @@ import logging
 from anthropic import Anthropic
 
 # Fetch API Key from Streamlit secrets
-api_key = st.secrets["general"].get("ANTHROPIC_API_KEY", None)
+# Fetch API Key from Streamlit secrets (debugging)
+api_key = os.environ.get("ANTHROPIC_API_KEY") or st.secrets.get("ANTHROPIC_API_KEY")
+
+# Debugging output
+if not api_key:
+    st.error("❌ API Key is missing! Check Streamlit secrets.")
+else:
+    st.success("✅ API Key loaded successfully!")  # Remove this after testing
+
 
 
 
