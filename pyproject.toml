@@ -1,3 +1,9 @@
+[tool.poetry]
+name = "trdy"
+version = "0.1.0"
+description = "Your project description"
+authors = ["Amar Pawar <your_email@example.com>"]
+
 [tool.poetry.dependencies]
 python = ">=3.10,<4"
 streamlit = "^1.42.2"
@@ -9,5 +15,10 @@ courlan = ">=1.3.2"
 pymupdf = "^1.25.3"
 beautifulsoup4 = "^4.13.3"
 requests = "^2.32.3"
-pdfminer.six = "20221105"  # 🔹 Use a stable version
+pdfminer.six = "20221105"  # ✅ Use a stable version
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
 
