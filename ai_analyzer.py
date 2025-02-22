@@ -6,6 +6,7 @@ from anthropic import Anthropic
 # Fetch API Key from Streamlit secrets
 # Fetch API Key from Streamlit secrets (debugging)
 api_key = os.environ.get("ANTHROPIC_API_KEY") or st.secrets.get("ANTHROPIC_API_KEY")
+st.write("DEBUG: API Key:", api_key)  # Remove this after testing
 
 # Debugging output
 if not api_key:
